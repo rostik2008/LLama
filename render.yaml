@@ -1,15 +1,1 @@
-services:
-  - type: web
-    name: telegram-nvidia-bot
-    env: python
-    plan: free
-    region: oregon
 
-    buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
-
-    envVars:
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
-      - key: NVIDIA_API_KEY
-        sync: false
