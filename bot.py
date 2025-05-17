@@ -133,7 +133,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         reply_markup=create_main_keyboard()
     )
     logging.info(f"Команда /start получена от {user.id}")
-
 async def reset_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
     if chat_id in chat_states:
