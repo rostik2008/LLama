@@ -9,14 +9,14 @@ from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import asyncio
 
-# --- Настройки вашего бота и API ---
+
+
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 
 NVIDIA_MODEL_NAME = "meta/llama-4-maverick-17b-128e-instruct"
 NVIDIA_INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
-# Настройка логирования для отслеживания ошибок и информации
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -25,7 +25,8 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("telegram").setLevel(logging.WARNING)
 
-# --- Определения режимов чата и их системных промптов ---
+
+
 MODE_GENERAL_CHAT = "Общий чат"
 MODE_CODE_HELPER = "Помощник по коду"
 BUTTON_HISTORY = "История чата"
@@ -38,7 +39,7 @@ SYSTEM_PROMPTS = {
 chat_states = {}
 MAX_HISTORY_LENGTH = 10 
 
-# --- Вспомогательные функции ---
+
 
 def get_initial_history_for_mode(mode: str) -> list:
     system_prompt = SYSTEM_PROMPTS.get(mode, SYSTEM_PROMPTS[MODE_GENERAL_CHAT])
@@ -116,7 +117,7 @@ async def process_llm_request(chat_id: int, user_message_content: str) -> str:
         logging.error(f"Неизвестная ошибка при обращении к LLM: {e}")
         return "Извините, произошла непредвиденная ошибка при получении ответа от модели."
 
-# --- Обработчики команд Telegram-бота ---
+
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
@@ -231,22 +232,15 @@ async def handle_photo_message(update: Update, context: ContextTypes.DEFAULT_TYP
     selected_base64_image = None
     
     try:
-        # Telegram предоставляет несколько размеров фото, от самого маленького до самого большого.
-        # Мы перебираем их, чтобы найти самый большой размер, который не превышает лимит.
         for photo_size in update.message.photo:
             photo_file_obj = await photo_size.get_file()
             photo_bytes_io = io.BytesIO()
             await photo_file_obj.download_to_memory(photo_bytes_io)
-            photo_bytes_io.seek(0) # Перемещаем указатель в начало потока
-            
+            photo_bytes_io.seek(0) 
             current_base64_image = base64.b64encode(photo_bytes_io.read()).decode('utf-8')
-            
-            # Лимит NVIDIA API для встроенных изображений: 180,000 символов Base64
             if len(current_base64_image) < 180_000:
                 selected_base64_image = current_base64_image
             else:
-                # Если текущий размер уже слишком большой, то и все последующие (большие)
-                # также будут слишком большими, поэтому можно прекратить проверку.
                 break 
         
         if selected_base64_image is None:
@@ -257,7 +251,7 @@ async def handle_photo_message(update: Update, context: ContextTypes.DEFAULT_TYP
             )
             return
 
-        # Формируем контент для LLM в виде одной строки
+        
         image_html_tag = f'<img src="data:image/jpeg;base64,{selected_base64_image}" />'
         
         user_message_content = ""
